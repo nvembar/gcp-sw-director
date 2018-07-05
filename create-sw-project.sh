@@ -31,14 +31,16 @@ while getopts "a" OPT; do
     esac
 done
 
-if [[ $# -ne 3 ]]
+if [[ $(( $# - $OPTIND )) -ne 2 ]]
 then
     usage
 fi
 
-ORG_ID=$1
-PROJECT_ID=$2
-PROJECT_NAME=$3
+ARGV=("$@")
+
+ORG_ID=${ARGV[$((OPTIND - 1))]}
+PROJECT_ID=${ARGV[$((OPTIND))]}
+PROJECT_NAME=${ARGV[$((OPTIND + 1))]}
 
 if [[ -a ${PROJECT_ID} ]]
 then
