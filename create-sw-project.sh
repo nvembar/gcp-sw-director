@@ -11,14 +11,16 @@ PROJECT_NAME=
 PROJECT_ID=
 DOMAIN=
 SUBDOMAIN=
+BILLING_ACCT=
 PLAN_ONLY=1
 
 function usage {
-    echo "$0 -o <organization id> -p <project id> -d <domain> [-n <project name] [-s <subdomain>] [-a]"
+    echo "$0 -o <organization id> -p <project id> -d <domain> -b <billing account name> [-n <project name] [-s <subdomain>] [-a]"
     echo ""
     echo "     -o <organization id> The GCP Organization ID [required]"
     echo "     -p <project ID> The GCP Project ID to create in the Organization [required]"
     echo "     -d <domain> The domain where the website will be created [required]"
+    echo "     -b <billing accout name> The display name of the billing account [required]"
     echo "     -s <subdomain> The name of the subdomain to be built off the domain [optional]"
     echo "     -n <project name> [optional]"
     echo "     -a: Runs terraform apply to actually build the resources"
@@ -30,7 +32,7 @@ function usage {
     exit 1
 }
 
-while getopts "an:d:s:o:p:" OPT; do
+while getopts "an:d:b:s:o:p:" OPT; do
     case $OPT in
         a)
             PLAN_ONLY=0
@@ -40,6 +42,9 @@ while getopts "an:d:s:o:p:" OPT; do
             ;;
         d)
             DOMAIN=${OPTARG}
+            ;;
+        b)
+            BILLING_ACCT=${OPTARG}
             ;;
         s)
             SUBDOMAIN=${OPTARG}
@@ -58,11 +63,11 @@ done
 
 # Check for the required arguments
 
-if [[ -z ${ORG_ID} || -z ${PROJECT_ID} || -z ${DOMAIN} ]]
+if [[ -z ${ORG_ID} || -z ${PROJECT_ID} || -z ${DOMAIN} || -z ${BILLING_ACCT} ]]
 then
     echo "One of the required arguments was not set"
     echo ""
-    echo "ORG_ID=\'${ORG_ID}\' PROJECT_ID=\'${PROJECT_ID}\' DOMAIN=\'${DOMAIN}\'"
+    echo "ORG_ID=\'${ORG_ID}\' PROJECT_ID=\'${PROJECT_ID}\' DOMAIN=\'${DOMAIN}\' BILLING_ACCT=\'${BILLING_ACCT}\'"
     usage
 fi
 
@@ -110,6 +115,7 @@ project_id = "$PROJECT_ID"
 project_name = "$PROJECT_NAME"
 domain = "$DOMAIN"
 subdomain = "$SUBDOMAIN"
+billing_acct_name = "$BILLING_ACCT"
 EOF
 
 terraform init -input=false

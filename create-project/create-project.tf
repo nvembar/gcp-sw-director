@@ -12,6 +12,10 @@ variable "org_id" {
     type = "string"
 }
 
+variable "billing_acct_name" {
+    type = "string"
+}
+
 variable "project_name" {
     type = "string"
 }
@@ -32,9 +36,15 @@ data "google_organization" "org" {
     organization = "${var.org_id}"
 }
 
+data "google_billing_account" "acct" {
+    display_name = "${var.billing_acct_name}"
+    open = true
+}
+
 resource "google_project" "sw_project" {
     name = "${var.project_name}"
     project_id = "${var.slug}-${var.project_id}"
+    billing_account = "${data.google_billing_account.acct.id}"
     org_id = "${data.google_organization.org.id}"
 }
 
@@ -44,8 +54,8 @@ resource "google_service_account" "sw_service_account" {
     project = "${google_project.sw_project.project_id}"
 }
 
-resource "google_service_account_iam_binding" "sw_sa_binding" {
-    service_account_id = "${google_service_account.sw_service_account.unique_id}"
+resource "google_project_iam_binding" "sw_sa_binding" {
+    project = "${google_project.sw_project.project_id}"
     role = "roles/storage.admin"
     members = [
         "serviceAccount:${google_service_account.sw_service_account.email}"
