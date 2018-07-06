@@ -79,9 +79,8 @@ then
 fi
 
 PROJECT_DIR=projects/${PROJECT_ID}
-VAR_FILE=${PROJECT_DIR}/${PROJECT_ID}.tfvars
-PLAN_FILE=${PROJECT_DIR}/${PROJECT_ID}.plan.tf
-TFSTATE_FILE=${PROJECT_DIR}/terraform.tfstate
+VAR_FILE=${PROJECT_ID}.tfvars
+PLAN_FILE=${PROJECT_ID}.plan.tf
 
 # TODO: Need to test that this is a valid project name and if it already exists
 if [[ ! -a projects ]]
@@ -103,6 +102,8 @@ fi
 
 cp -R create-project projects/${PROJECT_ID}
 
+pushd projects/${PROJECT_ID}
+
 cat << EOF > ${VAR_FILE}
 org_id = "$ORG_ID"
 project_id = "$PROJECT_ID"
@@ -111,15 +112,15 @@ domain = "$DOMAIN"
 subdomain = "$SUBDOMAIN"
 EOF
 
-terraform init -input=false ${PROJECT_DIR}
+terraform init -input=false
 
 terraform plan -input=false \
                -var-file=${VAR_FILE} \
-               -out=${PLAN_FILE} \
-               -state=${PROJECT_DIR}/terraform.tfstate \
-               ${PROJECT_DIR}
+               -out=${PLAN_FILE}
 
 if [[ PLAN_ONLY -eq 0 ]]
 then
-    terraform apply -input=false -state=${TFSTATE_FILE} ${PLAN_FILE}
+    terraform apply -input=false ${PLAN_FILE}
 fi
+
+popd
